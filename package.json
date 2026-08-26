@@ -4,6 +4,10 @@
   "description": "Test package for prototyping a tag-based npm publish pipeline via GitHub Actions",
   "main": "index.js",
   "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PragmaLabX/rio-pub-test.git"
+  },
   "files": [
     "index.js"
   ],
