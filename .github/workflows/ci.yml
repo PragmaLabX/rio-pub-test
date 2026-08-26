@@ -27,7 +27,14 @@ jobs:
 
       - run: npm ci
 
-      - run: npm audit signatures
+      - name: npm audit signatures
+        run: |
+          DEP_COUNT=$(node -p "Object.keys({...require('./package.json').dependencies, ...require('./package.json').devDependencies}).length")
+          if [ "$DEP_COUNT" -gt 0 ]; then
+            npm audit signatures
+          else
+            echo "No dependencies installed — skipping signature audit"
+          fi
 
       - run: npm audit --audit-level=high
 
