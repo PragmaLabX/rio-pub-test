@@ -1,0 +1,4 @@
+# Изменения в pipeline публикации и метаданных пакета требуют ревью владельца репозитория.
+# TODO: замените на реальный @username или @PragmaLabX/<team> — имя организации само по себе не валидно.
+/.github/workflows/  @PragmaLabX/maintainers
+/package.json        @PragmaLabX/maintainers
