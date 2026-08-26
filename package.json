@@ -1,0 +1,19 @@
+{
+  "name": "rio-pub-test",
+  "version": "0.1.0",
+  "description": "Test package for prototyping a tag-based npm publish pipeline via GitHub Actions",
+  "main": "index.js",
+  "type": "commonjs",
+  "files": [
+    "index.js"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
+}
