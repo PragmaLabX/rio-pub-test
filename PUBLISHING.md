@@ -85,21 +85,54 @@ Actions и npm на каждый запуск, токен не хранится 
 
 ---
 
-## 4. Как теперь делать релиз
+## 4. Как теперь делать релиз (полный процесс)
 
-```bash
-git checkout main
-git pull
+1. **Работа и merge как обычно.** Feature-ветка → PR в `main` → workflow
+   `CI` прогоняет тесты на PR и на самом `main`. Публикация тут ещё
+   никак не участвует.
 
-npm version patch   # patch | minor | major
+2. **Поднять версию и создать тег** (из актуального `main`):
 
-git push --follow-tags
-```
+   ```bash
+   git checkout main
+   git pull
 
-`npm version` обновит `package.json`, создаст коммит и локальный тег
-`vX.Y.Z`. Пуш тега запускает [`publish.yml`](.github/workflows/publish.yml):
-тесты → проверка, что версия в `package.json` совпадает с тегом →
-`npm publish --provenance` через Trusted Publisher.
+   npm version patch   # patch | minor | major — выбирается по смыслу изменений
+
+   git push --follow-tags
+   ```
+
+   `npm version` сам обновляет `version` в `package.json`, коммитит это и
+   создаёт локальный git-тег `vX.Y.Z`. `git push --follow-tags` отправляет
+   и коммит, и тег на GitHub одним разом.
+
+3. **Пуш тега запускает `publish.yml`.** Job сразу переходит в статус
+   **waiting**, если на environment `npm-release` включены Required
+   reviewers — это ожидаемо, не баг. Идёте в GitHub → **Actions** → нужный
+   run → жёлтая кнопка **Review deployments** → отмечаете `npm-release` →
+   **Approve and deploy**.
+
+4. **После approve job выполняет по порядку:**
+   `npm ci` → `npm audit signatures` (пропускается, если нет зависимостей)
+   → `npm test` → сверка версии в `package.json` с версией из тега (если
+   не совпадают — падает, публикации не будет) → `npm publish
+   --provenance` через Trusted Publisher (OIDC, без токенов в секретах).
+
+5. **Проверка результата**: `https://www.npmjs.com/package/rio-pub-test` —
+   должна появиться новая версия со значком Provenance.
+
+### Если что-то пошло не так до approve
+
+Если находите баг в pipeline уже после того, как тег запушен, но до того,
+как approve нажат — **не аппрувьте сломанный run**. Job для конкретного
+тега навсегда зафиксирован на workflow-файле из коммита, на который тег
+указывает (даже если вы тут же почините `publish.yml` на `main`, старый run
+это не подхватит). Правильная последовательность:
+
+1. Отклонить (**Reject**) зависший run в Review deployments.
+2. Починить `publish.yml`/`ci.yml` на `main`, закоммитить, запушить.
+3. Снова `npm version patch` (создаст новую версию/тег поверх исправленного
+   `main`) и `git push --follow-tags`.
 
 ---
 
@@ -131,10 +164,8 @@ git push --follow-tags
 - **`--provenance`** при публикации — npm привяжет к пакету верифицируемый
   сертификат "собран из этого коммита этим workflow", виден на странице
   пакета как значок Provenance.
-- **CODEOWNERS** ([`.github/CODEOWNERS`](.github/CODEOWNERS)) на
-  `.github/workflows/` и `package.json` — изменения pipeline не проходят
-  без ревью владельца. **Замените плейсхолдер `@PragmaLabX/maintainers`**
-  на реальный `@username` или существующую GitHub-команду.
+- **CODEOWNERS** — временно убран, плейсхолдер `@PragmaLabX/maintainers`
+  указывал на несуществующую команду. См. [docs/TODO.md](docs/TODO.md).
 
 ### Нужно настроить руками в GitHub UI
 
@@ -182,5 +213,5 @@ git push --follow-tags
 | Кто | Что делает |
 |---|---|
 | Вы | npm-аккаунт, 2FA, первый ручной `npm publish`, Trusted Publisher на npm, branch/tag protection и Environment в GitHub UI |
-| Я (уже сделано) | git-репозиторий, package.json, CI/publish workflows, pinning actions, CODEOWNERS, этот документ |
+| Я (уже сделано) | git-репозиторий, package.json, CI/publish workflows, pinning actions, этот документ |
 | Автоматика после настройки | `npm version` + `git push --follow-tags` → CI → review в Environment → publish с OIDC |
