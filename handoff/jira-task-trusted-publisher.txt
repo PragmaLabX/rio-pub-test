@@ -1,0 +1,18 @@
+Summary:
+Set up npm Trusted Publisher for tag-based releases
+
+Description:
+
+Prerequisite
+- publish.yml is in .github/workflows/
+
+1. npm — Trusted Publisher
+npmjs.com -> Packages -> <package> -> Settings -> Trusted publishing -> GitHub Actions
+
+- Organization or user: <org-or-user>
+- Repository: <repo>
+- Workflow filename: publish.yml
+- Environment name: npm-release
+- Allowed actions: npm publish
+- Select "Require two-factor authentication and disallow bypass 2fa tokens"
+
