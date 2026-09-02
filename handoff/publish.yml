@@ -34,14 +34,6 @@ jobs:
           node-version: 22.x
           registry-url: https://registry.npmjs.org
 
-      - run: npm install -g npm@latest
-
-      - run: npm ci
-
-      - run: npm audit signatures
-
-      - run: npm test
-
       - name: Verify tag matches package.json version
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"
@@ -50,5 +42,13 @@ jobs:
             echo "Tag $GITHUB_REF_NAME does not match package.json version $PKG_VERSION"
             exit 1
           fi
+
+      - run: npm install -g npm@latest
+
+      - run: npm ci
+
+      - run: npm audit signatures
+
+      - run: npm test
 
       - run: npm publish --provenance
